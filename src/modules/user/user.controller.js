@@ -1,49 +1,55 @@
 import * as userService from "./user.service.js";
+import { successRes } from "../../utils/success.res.js";
 
 export const signup = async (req, res) => {
-  try {
-    const result = await userService.signupService(req.body);
-    return res.status(result.status).json(result.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const user = await userService.signupService(req.body);
+  return successRes({
+    res,
+    status: 201,
+    msg: "User added successfully.",
+    data: { user },
+  });
 };
 
 export const login = async (req, res) => {
-  try {
-    const result = await userService.loginService(req.body);
-    return res.status(result.status).json(result.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const user = await userService.loginService(req.body);
+  return successRes({
+    res,
+    status: 200,
+    msg: "Login successful",
+    data: { user },
+  });
 };
 
 export const updateUser = async (req, res) => {
-  try {
-    const { id } = req.query;
-    const result = await userService.updateUserService(id, req.body);
-    return res.status(result.status).json(result.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const id = req.params.id || req.query.id;
+  const user = await userService.updateUserService(id, req.body);
+  return successRes({
+    res,
+    status: 200,
+    msg: "User updated",
+    data: { user },
+  });
 };
 
 export const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.query;
-    const result = await userService.deleteUserService(id);
-    return res.status(result.status).json(result.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const id = req.params.id || req.query.id;
+  const user = await userService.deleteUserService(id);
+  return successRes({
+    res,
+    status: 200,
+    msg: "user deleted",
+    data: { user },
+  });
 };
 
 export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.query;
-    const result = await userService.getUserByIdService(id);
-    return res.status(result.status).json(result.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  const id = req.params.id || req.query.id;
+  const user = await userService.getUserByIdService(id);
+  return successRes({
+    res,
+    status: 200,
+    msg: "done",
+    data: { user },
+  });
 };

@@ -1,6 +1,7 @@
 import { connectDB } from "./DB/db.connection.js";
 import userRouter from "./modules/user/user.router.js";
 import noteRouter from "./modules/note/note.router.js";
+import { errorRes } from "./utils/error.res.js";
 
 export const bootstrap = (app, express) => {
   // 1. الاتصال بقاعدة البيانات
@@ -13,12 +14,11 @@ export const bootstrap = (app, express) => {
   app.use("/users", userRouter);
   app.use("/notes", noteRouter);
 
-//   4. معالجة الروابط غير المعرفة (Not Found Handler - 404)
-  app.use((req, res) => {
-    return res.status(404).json({
+  // 4. معالجة الروابط غير المعرفة (Not Found Handler - 404)
+  app.use((req, res, next) => {
+    errorRes({
       msg: `Invalid URL: ${req.originalUrl} not found`,
-      status: 404,
-      timestamp: new Date().toISOString(),
+      statusCode: 404,
     });
   });
 

@@ -1,23 +1,24 @@
 import { UserModel } from "../../DB/Models/user.model.js";
+import { errorRes } from "../../utils/error.res.js";
 
 export const signupService = async (body) => {
   const { name, email, password, phone, age } = body;
   const isExist = await UserModel.findOne({ email });
   if (isExist) {
-    return { status: 409, data: { message: "Email already exists." } };
+    errorRes({ msg: "Email already exists.", statusCode: 409 });
   }
 
   const newUser = await UserModel.create({ name, email, password, phone, age });
-  return { status: 201, data: { message: "User added successfully.", user: newUser } };
+  return newUser;
 };
 
 export const loginService = async (body) => {
   const { email, password } = body;
   const user = await UserModel.findOne({ email, password });
   if (!user) {
-    return { status: 400, data: { message: "Invalid email or password" } };
+    errorRes({ msg: "Invalid email or password", statusCode: 400 });
   }
-  return { status: 200, data: { message: "Login successful", user } };
+  return user;
 };
 
 export const updateUserService = async (userId, body) => {
@@ -25,13 +26,13 @@ export const updateUserService = async (userId, body) => {
 
   const user = await UserModel.findById(userId);
   if (!user) {
-    return { status: 404, data: { message: "User not found" } };
+    errorRes({ msg: "User not found", statusCode: 404 });
   }
 
   if (email && email !== user.email) {
     const emailExists = await UserModel.findOne({ email });
     if (emailExists) {
-      return { status: 409, data: { message: "Email already exists" } };
+      errorRes({ msg: "Email already exists", statusCode: 409 });
     }
     user.email = email;
   }
@@ -41,21 +42,21 @@ export const updateUserService = async (userId, body) => {
   if (age) user.age = age;
 
   await user.save();
-  return { status: 200, data: { message: "User updated", user } };
+  return user;
 };
 
 export const deleteUserService = async (userId) => {
   const user = await UserModel.findByIdAndDelete(userId);
   if (!user) {
-    return { status: 404, data: { message: "User not found" } };
+    errorRes({ msg: "User not found", statusCode: 404 });
   }
-  return { status: 200, data: { message: "user deleted" } };
+  return user;
 };
 
 export const getUserByIdService = async (userId) => {
   const user = await UserModel.findById(userId);
   if (!user) {
-    return { status: 404, data: { message: "User not found" } };
+    errorRes({ msg: "User not found", statusCode: 404 });
   }
-  return { status: 200, data: user };
+  return user;
 };

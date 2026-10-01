@@ -1,39 +1,40 @@
 import mongoose from "mongoose";
 import { NoteModel } from "../../DB/Models/note.model.js";
+import { errorRes } from "../../utils/error.res.js";
 
 export const createNoteService = async (userId, body) => {
   const { title, content } = body;
   const note = await NoteModel.create({ title, content, userId });
-  return { status: 201, data: { message: "Note created", note } };
+  return note;
 };
 
 export const updateNoteService = async (noteId, userId, body) => {
   const { title, content } = body;
   const note = await NoteModel.findById(noteId);
   if (!note) {
-    return { status: 404, data: { message: "Note not found" } };
+    errorRes({ msg: "Note not found", statusCode: 404 });
   }
 
   if (note.userId.toString() !== userId) {
-    return { status: 403, data: { message: "You are not the owner" } };
+    errorRes({ msg: "You are not the owner", statusCode: 403 });
   }
 
   if (title) note.title = title;
   if (content) note.content = content;
 
   const updatedNote = await note.save();
-  return { status: 200, data: { message: "updated", note: updatedNote } };
+  return updatedNote;
 };
 
 export const replaceNoteService = async (noteId, userId, body) => {
   const { title, content } = body;
   const note = await NoteModel.findById(noteId);
   if (!note) {
-    return { status: 404, data: { message: "Note not found" } };
+    errorRes({ msg: "Note not found", statusCode: 404 });
   }
 
   if (note.userId.toString() !== userId) {
-    return { status: 403, data: { message: "You are not the owner" } };
+    errorRes({ msg: "You are not the owner", statusCode: 403 });
   }
 
   const replacedNote = await NoteModel.findOneAndReplace(
@@ -42,30 +43,30 @@ export const replaceNoteService = async (noteId, userId, body) => {
     { new: true, runValidators: true }
   );
 
-  return { status: 200, data: replacedNote };
+  return replacedNote;
 };
 
 export const updateAllNotesTitleService = async (userId, body) => {
   const { title } = body;
   const result = await NoteModel.updateMany({ userId }, { title }, { runValidators: true });
   if (result.matchedCount === 0) {
-    return { status: 404, data: { message: "No note found" } };
+    errorRes({ msg: "No note found", statusCode: 404 });
   }
-  return { status: 200, data: { message: "All notes updated" } };
+  return result;
 };
 
 export const deleteSingleNoteService = async (noteId, userId) => {
   const note = await NoteModel.findById(noteId);
   if (!note) {
-    return { status: 404, data: { message: "Note not found" } };
+    errorRes({ msg: "Note not found", statusCode: 404 });
   }
 
   if (note.userId.toString() !== userId) {
-    return { status: 403, data: { message: "You are not the owner" } };
+    errorRes({ msg: "You are not the owner", statusCode: 403 });
   }
 
   await NoteModel.findByIdAndDelete(noteId);
-  return { status: 200, data: { message: "delete", note } };
+  return note;
 };
 
 export const paginateAndSortNotesService = async (userId, query) => {
@@ -77,28 +78,28 @@ export const paginateAndSortNotesService = async (userId, query) => {
     .skip(skip)
     .limit(parseInt(limit));
 
-  return { status: 200, data: notes };
+  return notes;
 };
 
 export const getNoteByIdService = async (noteId, userId) => {
   const note = await NoteModel.findById(noteId);
   if (!note) {
-    return { status: 404, data: { message: "Note not found" } };
+    errorRes({ msg: "Note not found", statusCode: 404 });
   }
 
   if (note.userId.toString() !== userId) {
-    return { status: 403, data: { message: "You are not the owner" } };
+    errorRes({ msg: "You are not the owner", statusCode: 403 });
   }
 
-  return { status: 200, data: note };
+  return note;
 };
 
 export const getNoteByContentService = async (userId, content) => {
   const note = await NoteModel.findOne({ userId, content });
   if (!note) {
-    return { status: 404, data: { message: "No note found" } };
+    errorRes({ msg: "No note found", statusCode: 404 });
   }
-  return { status: 200, data: note };
+  return note;
 };
 
 export const getNotesWithUserService = async (userId) => {
@@ -106,7 +107,7 @@ export const getNotesWithUserService = async (userId) => {
     .select("title userId createdAt")
     .populate("userId", "email");
 
-  return { status: 200, data: notes };
+  return notes;
 };
 
 export const aggregateNotesService = async (userId, title) => {
@@ -138,10 +139,10 @@ export const aggregateNotesService = async (userId, title) => {
   ];
 
   const notes = await NoteModel.aggregate(pipeline);
-  return { status: 200, data: notes };
+  return notes;
 };
 
 export const deleteAllNotesService = async (userId) => {
   await NoteModel.deleteMany({ userId });
-  return { status: 200, data: { message: "Deleted" } };
+  return true;
 };
